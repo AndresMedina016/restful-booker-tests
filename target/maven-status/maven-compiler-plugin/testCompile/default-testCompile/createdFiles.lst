@@ -1,0 +1,3 @@
+tests\BaseApiTest.class
+tests\BookingCreateTests.class
+tests\BookingReadTests.class
