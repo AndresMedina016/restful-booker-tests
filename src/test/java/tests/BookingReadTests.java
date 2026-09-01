@@ -5,6 +5,8 @@ import model.BookingDates;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
@@ -51,6 +53,17 @@ class BookingReadTests extends BaseApiTest {
                 .when()
                 .get("/booking/{id}")
                 .then()
-                .statusCode(404);
+                .statusCode(404); //not found
+    }
+
+    @Test
+    @DisplayName("AUTO-RB-09 - Obtener booking sin especificar id (GET)")
+    void obtenerBookingSinEspecificarId() {
+        given()
+                .when()
+                .get("/booking/")
+                .then()
+                .statusCode(200)
+                .body("$", instanceOf(List.class));
     }
 }

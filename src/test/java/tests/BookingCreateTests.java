@@ -47,13 +47,14 @@ class BookingCreateTests extends BaseApiTest {
             }
             """;
 
+        //Se espera un error porque firstname es obligatorio y no puede estar vacío
         given()
                 .contentType("application/json")
                 .body(requestBody)
                 .when()
                 .post("/booking")
                 .then()
-                .statusCode(500);
+                .statusCode(400);
     }
 
     @Test
@@ -70,13 +71,14 @@ class BookingCreateTests extends BaseApiTest {
             }
             """;
 
+        //Se espera un error porque totalprice debe ser un valor numérico
         given()
                 .contentType("application/json")
                 .body(requestBody)
                 .when()
                 .post("/booking")
                 .then()
-                .statusCode(500);
+                .statusCode(400);
     }
 
     @Test
@@ -94,6 +96,7 @@ class BookingCreateTests extends BaseApiTest {
             }
             """;
 
+        //Se debería hacer el booking ignorando el campo adicional
         given()
                 .contentType("application/json")
                 .body(requestBody)
@@ -103,6 +106,55 @@ class BookingCreateTests extends BaseApiTest {
                 .statusCode(200)
                 .body("bookingid", notNullValue())
                 .body("booking.firstname", equalTo("Lucia"))
-                .body("booking.totalprice", equalTo(300));
+                .body("booking.totalprice", equalTo(300))
+                .body("booking.discount", nullValue());
+    }
+
+    @Test
+    @DisplayName("AUTO-RB-07 - Crear booking con checkout anterior a checkin (POST)")
+    void crearBookingConCheckoutAnteriorAlCheckin() {
+        String requestBody = """
+            {
+              "firstname": "Sofia",
+              "lastname": "Vargas",
+              "totalprice": 200,
+              "depositpaid": true,
+              "bookingdates": { "checkin": "2026-09-10", "checkout": "2026-09-01" },
+              "additionalneeds": "None"
+            }
+            """;
+
+        //Se espera un error porque checkout no puede ser anterior a checkin.
+        given()
+                .contentType("application/json")
+                .body(requestBody)
+                .when()
+                .post("/booking")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    @DisplayName("AUTO-RB-08 - Crear booking con checkin/checkout en formato inválido (POST)")
+    void crearBookingConFechasEnFormatoInvalido() {
+        String requestBody = """
+            {
+              "firstname": "Andres",
+              "lastname": "Mora",
+              "totalprice": 200,
+              "depositpaid": true,
+              "bookingdates": { "checkin": "10-09-2026", "checkout": "no-es-una-fecha" },
+              "additionalneeds": "None"
+            }
+            """;
+
+        //Se espera un error porque las fechas no tienen un formato válido.
+        given()
+                .contentType("application/json")
+                .body(requestBody)
+                .when()
+                .post("/booking")
+                .then()
+                .statusCode(400);
     }
 }
